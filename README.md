@@ -23,7 +23,7 @@
 1. Access [Google Cloud Console](https://cloud.google.com/), and navigate to Console.
 2. Navigate to "Enable APIs and services"
 3. Search Gmail API, Click the card to enter the detail page.
-4. Then select Install.
+4. Then select Enable.
 5. Done.
 
 ## Setup APIs & Services > OAuth Consent Screen
