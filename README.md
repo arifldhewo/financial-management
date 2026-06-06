@@ -10,8 +10,9 @@
 # Pre-requisite Local Installation
 
 1. [Installed Bun Runtime](https://bun.com/).
-2. [Installed Docker](https://www.docker.com/), ensure already logged in and already having WSL if in Windows.
-3. [Installed Ollama](https://ollama.com/) in host machine Or Using Subscription Model to use it in the n8n workflow as a categorization engine.
+2. [Installed WSL](https://learn.microsoft.com/en-us/windows/wsl/install).
+3. [Installed Docker](https://www.docker.com/), ensure already logged in and already having WSL if in Windows.
+4. [Installed Ollama](https://ollama.com/) in host machine Or Using Subscription Model to use it in the n8n workflow as a categorization engine.
 
 # Pre-requisite to connect Gmail REST-API
 
