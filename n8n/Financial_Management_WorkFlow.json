@@ -1,0 +1,165 @@
+{
+  "name": "Financial Management",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "6a060182-464b-40d4-8527-774ac58631b8",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "qwen3:4b-instruct",
+          "mode": "list",
+          "cachedResultName": "qwen3:4b-instruct"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "={{ $json.cleaned }}\n\nFrom above data, Can you help me to categorize the transaction and mapped it, like is it Food & Drink, Groceries, Entertainment, etc.\n\n# Transaction Categorization System Prompt\n\nYou are a financial transaction categorization engine.\n\nYour task is to classify transactions into exactly ONE category based on merchant name, transaction description, payment reference, recipient, sender, and transaction metadata.\n\n## Rules\n\n1. Return only valid JSON.\n2. Choose exactly one category.\n3. Use merchant names as the highest priority signal.\n4. Use transaction descriptions as secondary signals.\n5. If multiple categories seem applicable, choose the most specific category.\n6. If confidence is below 0.60, assign category \"Unknown\".\n7. Do not invent merchant names.\n8. Normalize merchant names before classification.\n\n---\n\n## Categories\n\n### Bills\n\nRecurring or utility-related expenses.\n\nExamples:\n\n* Electricity\n* Water\n* Gas\n* Internet\n* Cable TV\n* Mobile Data\n* Phone Bills\n* Insurance\n* Credit Card Payments\n* Maintenance Fees\n* Subscriptions\n\nCommon Merchants:\n\n* PLN\n* Telkomsel\n* XL\n* Indosat\n* Tri\n* by.U\n* First Media\n* Biznet\n* MyRepublic\n* Netflix\n* Spotify\n* Disney+\n* YouTube Premium\n* OpenAI\n* ChatGPT\n\nKeywords:\n\n* bill\n* subscription\n* premium\n* electricity\n* internet\n* insurance\n* topup pulsa\n* data package\n\n---\n\n### Debt\n\nPayments related to debt obligations.\n\nExamples:\n\n* Personal Loans\n* Mortgage\n* Vehicle Installments\n* Credit Financing\n\nKeywords:\n\n* loan\n* mortgage\n* installment\n* financing\n* leasing\n* cicilan\n* kredit\n* angsuran\n\n---\n\n### Education\n\nExpenses related to learning and education.\n\nExamples:\n\n* Tuition Fees\n* School Fees\n* University Fees\n* Books\n* Courses\n* Certifications\n\nKeywords:\n\n* tuition\n* school\n* university\n* course\n* certification\n* udemy\n* coursera\n* dicoding\n\n---\n\n### Entertainment\n\nExpenses for leisure and enjoyment.\n\nExamples:\n\n* Concerts\n* Games\n* Movies\n* Music Purchases\n* Streaming Services\n* Hobbies\n* Vacation Activities\n\nCommon Merchants:\n\n* Steam\n* Epic Games\n* Riot Games\n* PlayStation\n* Xbox\n* Bandcamp\n* HDTracks\n* Cinema XXI\n* CGV\n\nKeywords:\n\n* game\n* concert\n* movie\n* music\n* ticket\n* hobby\n* streaming\n\n---\n\n### Family\n\nHousehold and family-related expenses.\n\nExamples:\n\n* Children\n* Parents\n* Household Supplies\n* Laundry\n* Pets\n* Home Renovation\n\nKeywords:\n\n* laundry\n* pet\n* household\n* renovation\n* furniture\n* children\n* parent\n\n---\n\n### Food & Drinks\n\nFood consumption, beverages, snacks, cafes, and restaurants.\n\nExamples:\n\n* Restaurants\n* Cafes\n* Coffee Shops\n* Takeout\n* Street Food\n* Indonesian Food\n* Snacks\n* Fast Food\n\nCommon Merchants:\n\n* Starbucks\n* McDonald's\n* KFC\n* Burger King\n* Kopi Kenangan\n* Fore Coffee\n* Janji Jiwa\n\nKeywords:\n\n* cafe\n* coffee\n* restaurant\n* warung\n* nasi padang\n* nasi uduk\n* bakso\n* sate\n* seblak\n* gorengan\n* snack\n* food\n\n---\n\n### Shopping\n\nGeneral retail purchases.\n\nExamples:\n\n* Marketplace Purchases\n* Convenience Stores\n* Supermarkets\n* Retail Stores\n\nCommon Merchants:\n\n* Tokopedia\n* Shopee\n* Lazada\n* Bukalapak\n* TikTok Shop\n* Indomaret\n* Alfamart\n* Hypermart\n* Transmart\n\nKeywords:\n\n* marketplace\n* retail\n* minimarket\n* supermarket\n\n---\n\n### Transportation\n\nTransportation and mobility expenses.\n\nExamples:\n\n* Fuel\n* Toll Roads\n* Public Transportation\n* Ride-Hailing\n* Parking\n* Transportation Card Topups\n* E-Wallet Topups Used For Transportation\n\nCommon Merchants:\n\n* SPBU\n* Pertamina\n* Shell\n* BP\n* Vivo\n* Gojek\n* Grab\n* MRT\n* KRL\n* TransJakarta\n\nKeywords:\n\n* fuel\n* transport\n* toll\n* parking\n* topup emoney\n* topup mandiri card\n* topup flazz\n* topup e-money\n* topup ovo\n* topup gopay\n\n---\n\n### Unknown\n\nUse only when the transaction cannot be confidently categorized.\n\n\nThis data is based on English and Indonesian language data.\n\nThen make the output became a json format with format like below:\n```json\n{\n  \"status\": \"SUCCESS / FAILED. usually having another name in Indonesia, you have made a payment, pembayaran berhasil, Terima kasih sudah bertransaksi\",\n  \"acquirer\": \"acquirer, or Pengakusisi\"\n  \"amount\": \"Money Amount of transaction, usually having Rp or IDR as a currency, parse it into int\",\n  \"category\": \"Decide this based on Penerima or to Field Merchant name, company name, the weight should be based on penerima name if transaction type is QRIS, if not then from company or product name or if remarks is available then use it from remarks\"\n  \"senderName\": \"Usually that start from Hallo or Hai ${the_user_name} | set null if not exist, don't include the greetings word\",\n  \"senderAccount\": \"usually that sumber dana, source of fund, set NULL if not exist\",\n  \"recipientName\": \"usually beneficiary name, Penerima, in Sumber Dana Section, to field with name of subject not places. Payment to with name of places\",\n  \"recpientAccount\": \"usually having field to: with having int type of data, included Virtual account NO, merchant PAN\",\n  \"merchant_location\": \"Usually having name of places especially In Indonesia, if not found then set it NULL\",\n  \"transactionDate\": \"Usually having name transactions date or Tanggal Jam Tanggal Waktu\"\n}\n```\nStraight forward formatting JSON without adding any explanation"
+            }
+          ]
+        },
+        "simplify": false,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.ollama",
+      "typeVersion": 1,
+      "position": [
+        624,
+        0
+      ],
+      "id": "859d8d18-94d0-4fb4-9895-6626b52d2e78",
+      "name": "Message a model",
+      "alwaysOutputData": false,
+      "executeOnce": false,
+      "retryOnFail": false,
+      "credentials": {
+        "ollamaApi": {
+          "id": "DwLfBgAqM39mRZCF",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nfor (const item of $input.all()) {\n  item.json.myNewField = 1;\n}\n\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        976,
+        0
+      ],
+      "id": "a3c6fa6d-bc3a-40a0-98bb-13d92b4b270f",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const html = $json.textHtml || $json.html || '';\n\nconst cleaned = html\n  .replace(/<style[\\s\\S]*?<\\/style>/gi, '')\n  .replace(/<script[\\s\\S]*?<\\/script>/gi, '')\n  .replace(/<[^>]+>/g, ' ')\n  .replace(/\\s+/g, ' ')\n  .trim();\n\nreturn {\n  cleaned: `cleaned: ${cleaned}`\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        416,
+        0
+      ],
+      "id": "dfa0ff3b-d7d5-47b1-8bac-455df81c16f9",
+      "name": "Remove HTML"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "limit": 2,
+        "simple": false,
+        "filters": {
+          "q": "BCA"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        208,
+        0
+      ],
+      "id": "47bfb684-bb28-4805-b50e-f5104744142b",
+      "name": "Get ALl Message Relate to BCA",
+      "webhookId": "5cd58ccb-af62-49af-b308-4ac83899a384",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "ZJTjns8ZQL9znXWi",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Get ALl Message Relate to BCA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Remove HTML": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get ALl Message Relate to BCA": {
+      "main": [
+        [
+          {
+            "node": "Remove HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "1928f291-6fe9-4bde-9ab8-951199df39ce",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "094e13dbfbb333a79de6d7038bc74d9edd132f04d8e954815cc59689384c779f"
+  },
+  "nodeGroups": [],
+  "id": "OBspMYn9qGC3WfhE",
+  "tags": []
+}
