@@ -82,4 +82,4 @@
 2. FE WIP.
 3. Integrate n8n to BE | WIP.
 
-### This is just a luttle fun project
+### This is just a little fun project
