@@ -5,13 +5,13 @@ export const envSchema = z.object({
     .enum(["development", "staging", "production"])
     .default("development"),
   APP_NAME: z.string().default("nest-financial-management"),
-  APP_PORT: z.coerce.number().int().positive().default(8081),
+  APP_PORT: z.coerce.number().int().positive().default(8080),
   APP_LOG_LEVEL: z.enum(["debug", "info", "warn", "error"]).default("debug"),
 
-  DB_USER: z.string().default("admin"),
-  DB_PASSWORD: z.string().default("admin"),
-  DB_NAME: z.string().default("nest-financial-mangement"),
-  DB_PORT: z.string().default("5432"),
+  BE_POSTGRES_USER: z.string().default("admin"),
+  BE_POSTGRES_PASSWORD: z.string().default("admin"),
+  BE_POSTGRES_DB: z.string().default("nest-financial-mangement"),
+  BE_POSTGRES_PORT: z.string().default("5432"),
 });
 
 export type Env = z.infer<typeof envSchema>;
