@@ -35,8 +35,12 @@ export function validateEnv(env: Record<string, unknown>): Env {
 
 export function getEnv(): Env {
   if (!validatedEnv) {
+    validateEnv(process.env);
+  }
+
+  if (!validatedEnv) {
     throw new Error(
-      `Environment has not been validated yet. Make sure validatedEnv is registered in ConfigModule.forRoot().`,
+      "Environment has not been validated yet. Make sure validateEnv is registered in ConfigModule.forRoot().",
     );
   }
 

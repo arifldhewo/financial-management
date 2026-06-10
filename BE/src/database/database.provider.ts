@@ -2,13 +2,15 @@ import { dbConfig } from "src/config/config";
 import { DRIZZLE } from "./database.const";
 import { ConfigType } from "@nestjs/config";
 import postgres from "postgres";
-import { drizzle } from "drizzle-orm/postgres-js";
+import { drizzle, PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import * as schemas from "./schemas";
+
+export type DrizzleDatabase = PostgresJsDatabase<typeof schemas>;
 
 export const drizzleProvider = {
     provide: DRIZZLE,
     inject: [dbConfig.KEY],
-    useFactory: (env: ConfigType<typeof dbConfig>) => {
+    useFactory: (env: ConfigType<typeof dbConfig>): DrizzleDatabase => {
         const client = postgres({
             host: 'localhost',
             port: Number(env.BE_POSTGRES_PORT),
