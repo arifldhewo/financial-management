@@ -1,7 +1,7 @@
 import { pgTable, uuid, text, timestamp } from "drizzle-orm/pg-core";
 
 export const webhooksTable = pgTable("webhooks", {
-    ID: uuid("id").primaryKey().defaultRandom(),
+    ID: uuid("id").primaryKey().notNull().defaultRandom(),
     url: text("url").notNull(),
     httpMethod: text("http_method", { enum: ["POST", "PUT", "PATCH"] }).default("POST").notNull(),
     keyHeader: text("key_header"),
