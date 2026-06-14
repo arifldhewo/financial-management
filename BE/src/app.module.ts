@@ -3,9 +3,10 @@ import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
 import { AppConfigModule } from "./config/config.module";
 import { WebhooksModule } from './modules/webhooks/webhooks.module';
+import { TransactionCategoriesModule } from './modules/transaction-categories/transaction-categories.module';
 
 @Module({
-    imports: [AppConfigModule, WebhooksModule],
+    imports: [AppConfigModule, WebhooksModule, TransactionCategoriesModule],
     controllers: [AppController],
     providers: [AppService],
 })
