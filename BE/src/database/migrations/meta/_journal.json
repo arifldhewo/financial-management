@@ -1,20 +1,27 @@
 {
-  "version": "7",
-  "dialect": "postgresql",
-  "entries": [
-    {
-      "idx": 0,
-      "version": "7",
-      "when": 1781107354269,
-      "tag": "0000_create_webhooks_table",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1781107710313,
-      "tag": "0001_rename_http_method_webhooks_table",
-      "breakpoints": true
-    }
-  ]
+    "version": "7",
+    "dialect": "postgresql",
+    "entries": [
+        {
+            "idx": 0,
+            "version": "7",
+            "when": 1781107354269,
+            "tag": "0000_create_webhooks_table",
+            "breakpoints": true
+        },
+        {
+            "idx": 1,
+            "version": "7",
+            "when": 1781107710313,
+            "tag": "0001_rename_http_method_webhooks_table",
+            "breakpoints": true
+        },
+        {
+            "idx": 2,
+            "version": "7",
+            "when": 1781434458275,
+            "tag": "0002_create_categories_and_sub_categories_table",
+            "breakpoints": true
+        }
+    ]
 }
