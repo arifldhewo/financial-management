@@ -33,3 +33,7 @@ export const transactionSubCategories = pgTable("transaction_sub_categories", {
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
     deletedAt: timestamp("deleted_at").defaultNow().notNull(),
 });
+
+export const transactionLedgers = pgTable("transaction_ledgers", {
+    ID: uuid("id").primaryKey().notNull().defaultRandom(),
+});
