@@ -1,0 +1,374 @@
+{
+  "name": "Financial Management",
+  "nodes": [
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const rawHTMLBody = $json.textHtml || $json.html || '';\nconst threadID = $json.threadId;\nconst emailID = $json.id;\nconst emailDate = $json.date\n\nconst body = rawHTMLBody\n  .replace(/<style[\\s\\S]*?<\\/style>/gi, '')\n  .replace(/<script[\\s\\S]*?<\\/script>/gi, '')\n  .replace(/<[^>]+>/g, ' ')\n  .replace(/\\s+/g, ' ')\n  .trim();\n\nreturn {\n  emailID,\n  threadID,\n  emailDate,\n  body\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        416,
+        0
+      ],
+      "id": "cebca8b5-61ae-45a5-a243-4c8d7f3e9fbd",
+      "name": "Remove HTML"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "limit": 2,
+        "simple": false,
+        "filters": {
+          "includeSpamTrash": false,
+          "q": "Jago"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        208,
+        0
+      ],
+      "id": "ffdc875b-8e4a-413c-9d00-a70b1ba0a2f3",
+      "name": "Get ALL Message Relate to Bank Provider",
+      "webhookId": "5cd58ccb-af62-49af-b308-4ac83899a384",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "1mtpQUjCSo2Zhotn",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "c05266fb-2347-4dbe-a495-32dff1cfc974",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2fa74fa8-ff71-4ce6-a8b3-581c01616266",
+              "name": "emailID",
+              "value": "={{ $json.emailID }}",
+              "type": "string"
+            },
+            {
+              "id": "761b2e1d-ecc0-4ba3-9310-0bf6123267bf",
+              "name": "transactionDate",
+              "value": "={{ $json.emailDate }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1040,
+        96
+      ],
+      "id": "f30b4b21-b694-42ca-9dc5-0644793b082c",
+      "name": "Extract Deterministic Value"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1344,
+        32
+      ],
+      "id": "4a081160-0507-494d-aa26-b5d1609352b9",
+      "name": "Merge Payload LLM and Deterministic Value"
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all().map(raw => {\n  const { status, acquirer, amount, category, \n          senderName, senderAccount, recipientName, \n          recipientAccount, merchantLocation, transactionType\n        } = JSON.parse(raw.json.message.content);\n  \n  return {\n    emailID: raw.json.emailID,\n    transactionDate: raw.json.transactionDate,\n    status,\n    acquirer,\n    amount,\n    transactionType,\n    category,\n    senderName,\n    senderAccount,\n    recipientName,\n    recipientAccount,\n    merchantLocation,\n  }\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1520,
+        32
+      ],
+      "id": "8deccd5d-2fbe-49c4-892f-36c966b074ba",
+      "name": "Parse"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "qwen3.5:2b",
+          "mode": "list",
+          "cachedResultName": "qwen3.5:2b"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "={{ $json.body }}"
+            }
+          ]
+        },
+        "simplify": false,
+        "options": {
+          "system": "You are a financial transaction extraction and categorization engine.\n\nYour job is to extract transaction data from an email body and classify it into exactly ONE category.\n\nReturn ONLY valid JSON.\nDo not include markdown.\nDo not include explanations.\nDo not include thinking steps.\nDo not include text before or after JSON.\n\nUse null when a field is not found.\nDo not invent missing values.\n\nCATEGORY LIST:\n\n* Bills\n* Debt\n* Education\n* Entertainment\n* Family\n* Food & Drinks\n* Shopping\n* Transportation\n* Unknown\n\nCATEGORY RULES:\n\n1. Use recipientName, merchant name, company name, product name, and QRIS merchant as the strongest signals.\n2. For QRIS transactions, prioritize the merchant/recipient name.\n3. For bank transfer transactions, prioritize beneficiary/recipient name.\n4. For bill payment or virtual account transactions, prioritize company/product name.\n5. Use remarks, description, and email subject/body as secondary signals.\n6. Choose the most specific category.\n7. If confidence is below 0.60, use \"Unknown\".\n\nCATEGORY GUIDANCE:\n\nBills:\nElectricity, water, gas, internet, mobile data, phone bills, insurance, credit card payments, maintenance fees, subscriptions.\nCommon merchants/keywords: PLN, Telkomsel, XL, Indosat, Tri, by.U, First Media, Biznet, MyRepublic, Netflix, Spotify, Disney+, YouTube Premium, OpenAI, ChatGPT, bill, subscription, premium, listrik, pulsa, paket data, tagihan.\n\nDebt:\nLoan, mortgage, vehicle installment, credit financing.\nKeywords: loan, mortgage, installment, financing, leasing, cicilan, kredit, angsuran.\n\nEducation:\nSchool, university, courses, books, certification.\nKeywords: tuition, school, university, course, certification, udemy, coursera, dicoding, sekolah, kuliah.\n\nEntertainment:\nGames, movies, concerts, music, hobbies, streaming entertainment.\nCommon merchants/keywords: Steam, Epic Games, Riot Games, PlayStation, Xbox, Bandcamp, Cinema XXI, CGV, game, concert, movie, music, ticket, hobby.\n\nFamily:\nHousehold, parents, children, laundry, pets, home renovation, furniture.\nKeywords: laundry, pet, household, renovation, furniture, children, parent, keluarga, rumah.\n\nFood & Drinks:\nRestaurants, cafes, coffee shops, takeout, street food, snacks, fast food.\nCommon merchants/keywords: Starbucks, McDonald's, KFC, Burger King, Kopi Kenangan, Fore Coffee, Janji Jiwa, cafe, coffee, restaurant, warung, nasi, bakso, sate, seblak, gorengan, snack, food, makanan, minuman.\n\nShopping:\nMarketplace, convenience store, supermarket, retail purchases.\nCommon merchants/keywords: Tokopedia, Shopee, Lazada, Bukalapak, TikTok Shop, Indomaret, Alfamart, Hypermart, Transmart, marketplace, retail, minimarket, supermarket, belanja.\n\nTransportation:\nFuel, toll, parking, public transport, ride-hailing, transport card topups.\nCommon merchants/keywords: SPBU, Pertamina, Shell, BP, Vivo, Gojek, Grab, MRT, KRL, TransJakarta, fuel, transport, toll, parking, e-money, flazz, mandiri card, bensin, parkir.\n\nUnknown:\nUse when the transaction cannot be confidently classified.\n\nSTATUS RULES:\n\n* Use \"SUCCESS\" if the email indicates successful payment/transaction.\n  Examples: pembayaran berhasil, transaksi berhasil, payment successful, you have made a payment, terima kasih sudah bertransaksi.\n* Use \"FAILED\" if the email indicates failed, cancelled, reversed, rejected, or unsuccessful transaction.\n* Use \"UNKNOWN\" if status is unclear.\n\nOUTPUT FORMAT:\n{\n\"status\": \"SUCCESS\" | \"FAILED\" | \"UNKNOWN\",\n\"acquirer\": string | null,\n\"amount\": number | null,\n\"transactionType\": \"QRIS\" | \"DEBIT\" | \"TRANSFER\" | \"VA\" | \"TOPUP\" | \"UNKNOWN\"\n\"category\": \"Bills\" | \"Debt\" | \"Education\" | \"Entertainment\" | \"Family\" | \"Food & Drinks\" | \"Shopping\" | \"Transportation\" | \"Unknown\",\n\"senderName\": string | null,\n\"senderAccount\": string | null,\n\"recipientName\": string | null,\n\"recipientAccount\": string | null,\n\"merchantLocation\": string | null,\n}\n\nFIELD EXTRACTION RULES:\n\n* transactionType: extract transactions type based on enum, QRIS usually having PAN keyword.\n* amount: extract transaction amount only. Remove Rp, IDR, dots, commas, and parse as integer.\n* senderName: extract customer/user name from greetings like \"Halo\", \"Hai\", or \"Dear\". Do not include greeting word.\n* senderAccount: extract source of fund, sumber dana, rekening sumber, card number, or masked account if available.\n* recipientName: extract beneficiary, penerima, merchant, company, QRIS merchant, or payment destination.\n* recipientAccount: extract destination account, virtual account number, merchant PAN, bill number, or recipient number if available.\n* acquirer: extract acquirer/pengakuisisi if available.\n* merchant_location: extract merchant location/place/branch if available.",
+          "temperature": 0,
+          "think": false,
+          "num_ctx": 4096,
+          "keep_alive": "1h",
+          "num_thread": 0,
+          "format": "json"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.ollama",
+      "typeVersion": 1,
+      "position": [
+        1040,
+        -96
+      ],
+      "id": "47ad1316-da02-4a3a-a3db-ea3c47351e1b",
+      "name": "Message a model",
+      "alwaysOutputData": false,
+      "executeOnce": false,
+      "retryOnFail": false,
+      "credentials": {
+        "ollamaApi": {
+          "id": "4Apv4LtvjIHE0Epu",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:8080/transactions",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "emailID",
+              "value": "={{ $json.emailID }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        624,
+        96
+      ],
+      "id": "bb0e0580-b89e-483f-b985-25ea6c603222",
+      "name": "Get emailID",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "value": "aLNTf8qPtFxTWVON",
+          "mode": "list",
+          "cachedResultName": "errorLog",
+          "cachedResultUrl": "/projects/DfaedGglpAGhdNHF/datatables/aLNTf8qPtFxTWVON"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "httpUrl",
+              "displayName": "httpUrl",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "httpMethod",
+              "displayName": "httpMethod",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "httpStatus",
+              "displayName": "httpStatus",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "httpResponsePayload",
+              "displayName": "httpResponsePayload",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        624,
+        336
+      ],
+      "id": "3fe903a7-a044-415b-9771-c95928c2041a",
+      "name": "Insert row"
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all()"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        848,
+        0
+      ],
+      "id": "2fe6d63a-5a24-4867-8499-de543a55d62c",
+      "name": "Dedupe EmailID"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Remove HTML": {
+      "main": [
+        [
+          {
+            "node": "Dedupe EmailID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get ALL Message Relate to Bank Provider": {
+      "main": [
+        [
+          {
+            "node": "Remove HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Get ALL Message Relate to Bank Provider",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Deterministic Value": {
+      "main": [
+        [
+          {
+            "node": "Merge Payload LLM and Deterministic Value",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge Payload LLM and Deterministic Value": {
+      "main": [
+        [
+          {
+            "node": "Parse",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Merge Payload LLM and Deterministic Value",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get emailID": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Insert row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Dedupe EmailID": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Extract Deterministic Value",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "a4b55bf7-1392-47a8-8be2-3806653341ab",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "51f4ef99e70455355a2c8730e3c19897265e575dd29d22664d603d4ace6367ee"
+  },
+  "nodeGroups": [],
+  "id": "3URi6V2eE0zjyEpQ",
+  "tags": []
+}
