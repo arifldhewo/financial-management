@@ -12,7 +12,7 @@ export const webhooksTable = pgTable("webhooks", {
     deletedAt: timestamp("deleted_at", { withTimezone: true }),
 });
 
-export const transactionCategories = pgTable("transaction_categories", {
+export const transactionCategoriesTable = pgTable("transaction_categories", {
     ID: uuid("id").primaryKey().notNull().defaultRandom(),
     name: text("name").notNull().unique(),
     iconUrl: text("icon_url"),
@@ -21,7 +21,7 @@ export const transactionCategories = pgTable("transaction_categories", {
     deletedAt: timestamp("deleted_at", { withTimezone: true }),
 });
 
-export const transactionSubCategories = pgTable("transaction_sub_categories", {
+export const transactionSubCategoriesTable = pgTable("transaction_sub_categories", {
     ID: uuid("id").primaryKey().notNull().defaultRandom(),
     name: text("name").notNull().unique(),
     iconUrl: text("icon_url"),
@@ -31,7 +31,7 @@ export const transactionSubCategories = pgTable("transaction_sub_categories", {
     deletedAt: timestamp("deleted_at", { withTimezone: true }),
 });
 
-export const transactionLedgers = pgTable("transaction_ledgers", {
+export const transactionLedgersTable = pgTable("transaction_ledgers", {
     ID: uuid("id").primaryKey().notNull().defaultRandom(),
     emailMessageID: text("email_message_id").unique().$type(),
     bankSource: text("bank_source"),
@@ -42,8 +42,8 @@ export const transactionLedgers = pgTable("transaction_ledgers", {
     amount: bigint("amount", { mode: "number" }),
     senderName: text("sender_name"),
     senderAccount: text("sender_account"),
-    recipientName: text("recipientName"),
-    recipientAccount: text("recipientAccount"),
+    recipientName: text("recipient_name"),
+    recipientAccount: text("recipient_account"),
     merchantLocation: text("merchant_location"),
     remarks: text("remarks"),
     transactionDate: timestamp("transaction_date", { withTimezone: true }),
