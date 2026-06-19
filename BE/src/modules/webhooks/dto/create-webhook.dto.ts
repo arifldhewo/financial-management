@@ -1,5 +1,6 @@
 import { IsIn, IsOptional, IsString, IsUrl } from "class-validator";
 import { webhooksTable } from "src/database/schemas";
+import { HttpMethod } from "src/database/schemas.types";
 
 type InsertWebhook = typeof webhooksTable.$inferInsert;
 
@@ -10,9 +11,8 @@ export class CreateWebhookDto implements Pick<
     @IsUrl()
     url!: string;
 
-    @IsOptional()
-    @IsIn(["POST", "PUT", "PATCH"])
-    httpMethod?: "POST" | "PUT" | "PATCH";
+    @IsIn([HttpMethod.GET, HttpMethod.POST])
+    httpMethod!: HttpMethod.POST | HttpMethod.GET;
 
     @IsOptional()
     @IsString()
