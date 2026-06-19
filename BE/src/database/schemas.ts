@@ -33,7 +33,7 @@ export const transactionSubCategoriesTable = pgTable("transaction_sub_categories
 
 export const transactionLedgersTable = pgTable("transaction_ledgers", {
     ID: uuid("id").primaryKey().notNull().defaultRandom(),
-    emailMessageID: text("email_message_id").unique(),
+    emailMessageID: text("email_message_id").unique().notNull(),
     bankSource: text("bank_source"),
     type: text("type"),
     category: text("category"),

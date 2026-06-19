@@ -14,14 +14,17 @@ import { FindAllTransactionsResponseDTO } from "./dto/find-all-response.dto";
 export class TransactionsService {
     constructor(@Inject(DRIZZLE) private readonly db: DrizzleDatabase) {}
 
-    create(createTransactionDto: CreateTransactionDto) {
+    async create(createTransactionDto: CreateTransactionDto): Promise<CreateTransactionDto> {
         return this.db.transaction(async (tx) => {
-            const [createdUsers] = await tx
+            const [rows] = await tx
                 .insert(transactionLedgersTable)
                 .values(createTransactionDto)
+                .onConflictDoNothing()
                 .returning();
 
-            return createdUsers;
+            return {
+                ...rows,
+            };
         });
     }
 

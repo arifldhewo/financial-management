@@ -64,6 +64,13 @@
             "when": 1781891000683,
             "tag": "0008_adjust_existing_table_change_to_not_null",
             "breakpoints": true
+        },
+        {
+            "idx": 9,
+            "version": "7",
+            "when": 1781893071272,
+            "tag": "0009_altering_table_email_to_set_not_null",
+            "breakpoints": true
         }
     ]
 }

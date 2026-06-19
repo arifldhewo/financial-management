@@ -27,51 +27,59 @@ export class CreateTransactionDto implements Pick<
     emailMessageID!: string;
 
     @IsString()
-    bankSource!: string;
-
-    @IsString()
-    type!: string;
-
-    @IsString()
-    category!: string;
+    @IsOptional()
+    bankSource?: string | null;
 
     @IsString()
     @IsOptional()
-    acquirer?: string;
+    type?: string | null;
+
+    @IsString()
+    @IsOptional()
+    category?: string | null;
+
+    @IsString()
+    @IsOptional()
+    acquirer?: string | null;
 
     @IsEnum(TransactionLedgerStatuses)
-    status!: TransactionLedgerStatuses;
+    @IsOptional()
+    status?: TransactionLedgerStatuses | null;
 
     @IsNumber()
-    amount!: number;
-
-    @IsString()
-    senderName!: string;
+    @IsOptional()
+    amount?: number | null;
 
     @IsString()
     @IsOptional()
-    senderAccount?: string;
-
-    @IsString()
-    recipientName!: string;
+    senderName?: string | null;
 
     @IsString()
     @IsOptional()
-    recipientAccount?: string;
+    senderAccount?: string | null;
 
     @IsString()
     @IsOptional()
-    merchantLocation?: string;
+    recipientName?: string | null;
 
     @IsString()
     @IsOptional()
-    remarks?: string;
+    recipientAccount?: string | null;
+
+    @IsString()
+    @IsOptional()
+    merchantLocation?: string | null;
+
+    @IsString()
+    @IsOptional()
+    remarks?: string | null;
 
     @Type(() => Date)
     @IsDate()
-    transactionDate!: Date;
-
     @IsOptional()
+    transactionDate?: Date | null;
+
     @IsString()
-    referenceNumber!: string;
+    @IsOptional()
+    referenceNumber?: string | null;
 }
