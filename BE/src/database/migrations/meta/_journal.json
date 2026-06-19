@@ -57,6 +57,13 @@
             "when": 1781692540492,
             "tag": "0007_alter_table_transactions_ledger_rename_table",
             "breakpoints": true
+        },
+        {
+            "idx": 8,
+            "version": "7",
+            "when": 1781891000683,
+            "tag": "0008_adjust_existing_table_change_to_not_null",
+            "breakpoints": true
         }
     ]
 }
