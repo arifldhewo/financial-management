@@ -1,0 +1,1 @@
+ALTER TABLE "transaction_ledgers" ALTER COLUMN "email_message_id" SET NOT NULL;
