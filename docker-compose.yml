@@ -72,7 +72,16 @@ services:
     volumes:
       - n8n_data:/home/node/.n8n
 
+  openwebui:
+    container_name: openwebui
+    image: ghcr.io/open-webui/open-webui:main
+    ports:
+      - "3100:8080"
+    volumes:
+      - open-webui:/app/backend/data
+
 volumes:
   be_postgres_data:
   n8n_postgres_data:
   n8n_data:
+  open-webui:
